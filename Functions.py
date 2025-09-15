@@ -17,14 +17,40 @@ def TOU():
     total = 0
     return {"Time-of-Use" : total}
 
-def Tiered():
-    """
-    User defines tier thresholds and rates (e.g., Tier 1: first 100 kWh $0.20, Tier 2: 101–300 kWh $0.30, Tier 3: above 300 kWh $0.40).
-    The system calculates cost progressively across tiers.
-    The bill should show how much consumption fell into each tier.
-    """
-    total = 0
-    return {"Tiered" : total}
+def tiered(tiers, usage, fixed_fee):
+    total_cost = fixed_fee
+    remaining = usage
+    previous_threshold = 0
+
+    print(f"\nUsage: {usage} kWh")
+    print(f"Fixed fee: ${fixed_fee:.2f}")
+
+    for threshold, rate in tiers:
+        # how much fits in this tier
+        tier_usage = min(remaining, threshold - previous_threshold)
+        cost = tier_usage * rate
+        total_cost += cost
+        
+        #Print if not 0, otherwise prints final tier at 0 and looks gross
+        if tier_usage > 0:
+            print(f"{tier_usage} kWh @ ${rate:.2f}/kWh = ${cost:.2f}")
+
+        remaining -= tier_usage
+        previous_threshold = threshold
+
+        if remaining <= 0:
+            break
+
+    #If still usage left
+    if remaining > 0:
+        last_rate = tiers[-1][1]  #Use last tiers rate
+        cost = remaining * last_rate
+        total_cost += cost
+        print(f"{remaining} kWh @ ${last_rate:.2f}/kWh = ${cost:.2f}")
+
+    print(f"Total bill = ${total_cost:.2f}")
+    return total_cost
+    
 
 def tariffCompare(bills_dict):
     cheapest_tariff = min(bills_dict, key=bills_dict.get)
